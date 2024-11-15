@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetCare App - Calendario</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+            --accent-color: #DEB887;
+            --background-start: #FFF8DC;
+            --background-end: #FAEBD7;
+            --card-gradient-start: #FFFFFF;
+            --card-gradient-end: #FFF5E6;
+            --text-color: #5D4037;
+            --text-light: #8D6E63;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
+            padding-bottom: 70px;
+            color: var(--text-color);
+        }
+
+        .navbar-bottom {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            box-shadow: 0 -2px 10px rgba(139, 69, 19, 0.2);
+            z-index: 1000;
+        }
+
+        .nav-link {
+            color: #FFF5E6 !important;
+            transition: all 0.3s;
+        }
+
+        .nav-link.active {
+            color: #FFE4C4 !important;
+            text-shadow: 0 0 10px rgba(255, 228, 196, 0.5);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(145deg, var(--card-gradient-start), var(--card-gradient-end));
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.1);
+        }
+
+        /* Estilos específicos del calendario */
+        .calendar-header {
+            background: linear-gradient(145deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .calendar-day:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(139, 69, 19, 0.1);
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            width: 6px;
+            height: 6px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+        }
+
+        .calendar-day.active {
+            background: linear-gradient(145deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .event-card {
+            border-left: 4px solid;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+
+        .event-card:hover {
+            transform: translateX(5px);
+        }
+
+        .event-type {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        .weekday-label {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            padding: 5px 0;
+        }
+
+        .filter-pill {
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin: 0 5px;
+            border: 2px solid ;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-pill.active {
+            border-color: var(--primary-color);
+            background-color: var(--card-gradient-end);
+            color: rgba(0, 0, 0, 0.848);
+        }
+
+        .month-selector {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .pet-avatar-mini {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        /* Floating add button */
+        .nav-link .fa-plus-circle {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #FFE4C4, #FFDAB9);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+            transition: all 0.3s;
+        }
+
+        .nav-link .fa-plus-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container pt-4">
+        <!-- Calendar Header -->
+        <div class="calendar-header animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="month-selector"><i class="fas fa-chevron-left"></i></button>
+                <h4 class="mb-0">Noviembre 2024</h4>
+                <button class="month-selector"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            
+            <!-- Event Type Filters -->
+            <div class="d-flex overflow-auto py-2">
+                <div class="filter-pill active">
+                    <i class="fas fa-calendar-check"></i> Todos
+                </div>
+                <div class="filter-pill">
+                    <i class="fas fa-syringe"></i> Vacunas
+                </div>
+                <div class="filter-pill">
+                    <i class="fas fa-pills"></i> Medicinas
+                </div>
+                <div class="filter-pill">
+                    <i class="fas fa-cut"></i> Aseo
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <!-- Weekday Labels -->
+                <div class="calendar-grid mb-2">
+                    <div class="weekday-label">Dom</div>
+                    <div class="weekday-label">Lun</div>
+                    <div class="weekday-label">Mar</div>
+                    <div class="weekday-label">Mié</div>
+                    <div class="weekday-label">Jue</div>
+                    <div class="weekday-label">Vie</div>
+                    <div class="weekday-label">Sáb</div>
+                </div>
+
+                <!-- Calendar Days -->
+                <div class="calendar-grid">
+                    <div class="calendar-day text-muted">29</div>
+                    <div class="calendar-day text-muted">30</div>
+                    <div class="calendar-day text-muted">31</div>
+                    <div class="calendar-day">1</div>
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day has-event">9</div>
+                    <div class="calendar-day">10</div>
+                    <div class="calendar-day has-event">11</div>
+                    <div class="calendar-day">12</div>
+                    <div class="calendar-day active has-event">13</div>
+                    <div class="calendar-day">14</div>
+                    <div class="calendar-day has-event">15</div>
+                    <div class="calendar-day">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">18</div>
+                    <div class="calendar-day">19</div>
+                    <div class="calendar-day has-event">20</div>
+                    <div class="calendar-day">21</div>
+                    <div class="calendar-day">22</div>
+                    <div class="calendar-day">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day">25</div>
+                    <div class="calendar-day">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day">30</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events for Selected Day -->
+        <h5 class="mb-3">Eventos para hoy</h5>
+        
+        <div class="event-card card mb-3 animate__animated animate__fadeIn" style="border-left-color: #FF6B6B;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1705071842931-c6d9a67184ac?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cGVyZmlsJTIwZGVsJTIwZ2F0b3xlbnwwfHwwfHx8MA%3D%3D" alt="Luna" class="pet-avatar-mini">
+                    <div>
+                        <h6 class="mb-1">Vacuna Antirrábica
+                            <span class="event-type" style="background-color: #FFE4E4; color: #FF6B6B;">
+                                Vacuna
+                            </span>
+                        </h6>
+                        <p class="mb-0 text-muted"><i class="fas fa-clock"></i> 10:00 AM - Luna</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="event-card card mb-3 animate__animated animate__fadeIn" style="border-left-color: #4ECDC4;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <img src="https://st4.depositphotos.com/22221724/23785/i/450/depositphotos_237856744-stock-photo-portrait-adorable-golden-retriever-isolated.jpg" alt="Max" class="pet-avatar-mini">
+                    <div>
+                        <h6 class="mb-1">Baño y Corte
+                            <span class="event-type" style="background-color: #E8F8F7; color: #4ECDC4;">
+                                Aseo
+                            </span>
+                        </h6>
+                        <p class="mb-0 text-muted"><i class="fas fa-clock"></i> 3:00 PM - Max</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+   <!-- Bottom Navigation -->
+   <nav class="navbar-bottom py-2">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col">
+                <a href="../index.html" class="nav-link active">
+                    <i class="fas fa-home mb-1"></i>
+                    <br>
+                    <small>Inicio</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="calendario.html" class="nav-link">
+                    <i class="fas fa-calendar mb-1"></i>
+                    <br>
+                    <small>Calendario</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-plus-circle mb-1"></i>
+                </a>
+            </div>
+            <div class="col">
+                <a href="mascotas.html" class="nav-link">
+                    <i class="fas fa-paw mb-1"></i>
+                    <br>
+                    <small>Mascotas</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-user mb-1"></i>
+                    <br>
+                    <small>Perfil</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
